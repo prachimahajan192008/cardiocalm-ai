@@ -201,67 +201,6 @@ CardioCalm/
 ```
 
 
-
-
-
-## ⚙️ Getting Started
-
-### Prerequisites
-
-Make sure you have:
-
-- Node.js (LTS recommended)
-- npm
-- A Google Gemini API key
-
-### 1. Clone the Repository
-
-```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-cd CardioCalm
-```
-
-### 2. Install Dependencies
-
-```bash
-npm install
-```
-
-### 3. Configure Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-GEMINI_API_KEY=your_google_gemini_api_key
-```
-
-### 4. Start the Development Server
-
-```bash
-npm run dev
-```
-
-Open the local URL displayed in your terminal.
-
-### 5. Explore CardioCalm
-
-Try the three cardiac simulation presets, interact with the calming companion, generate an emergency dispatch brief, and experiment with the Prompt Lab.
-
----
-
-## 🔌 API Reference
-
-| Endpoint | Method | Purpose |
-|---|---|---|
-| `/api/gemini/cardiac-assess` | POST | AI-assisted cardiac risk assessment |
-| `/api/gemini/calm-chat` | POST | Context-aware calming conversation |
-| `/api/gemini/dispatch-brief` | POST | Emergency response brief generation |
-| `/api/gemini/run` | POST | Execute prompts |
-| `/api/gemini/critique` | POST | Evaluate prompt quality |
-| `/api/gemini/polish` | POST | Refine and improve prompts |
-
----
-
 ## 💡 What Makes CardioCalm Different?
 
 CardioCalm is built around a three-stage approach rather than treating cardiac health as a single prediction problem.
