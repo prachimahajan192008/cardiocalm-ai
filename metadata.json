@@ -1,0 +1,8 @@
+{
+  "name": "PromptWars Studio",
+  "description": "AI prompt challenge preparation workbench, live Gemini prompt testing lab, and submission builder for PromptWars 2026.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
