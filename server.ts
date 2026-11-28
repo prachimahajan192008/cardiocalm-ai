@@ -32,191 +32,30 @@ function formatGeminiError(err: unknown): { status: number; message: string } {
   if (raw.includes('PERMISSION_DENIED') || raw.includes('403')) {
     return {
       status: 403,
-      message: 'Gemini API permission denied. Please verify your API key in Settings > Secrets.',
+      message: 'Service permission denied. Please verify your API key in Settings > Secrets.',
     };
   }
   if (raw.includes('API_KEY_INVALID') || raw.includes('GEMINI_API_KEY')) {
     return {
       status: 400,
-      message: 'Gemini API key is missing or invalid. Check Settings > Secrets.',
+      message: 'API key is missing or invalid. Check Settings > Secrets.',
     };
   }
   if (raw.includes('RESOURCE_EXHAUSTED') || raw.includes('429')) {
     return {
       status: 429,
-      message: 'Rate limit or quota reached. Please wait briefly and try again.',
+      message: 'Rate limit reached. Please wait briefly and try again.',
     };
   }
   return {
     status: 500,
-    message: raw || 'Failed to generate response from Gemini.',
+    message: raw || 'Failed to complete request.',
   };
 }
 
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
-
-  // Run a user prompt against Gemini 4 Hydrogen
-  app.post('/api/gemini/run', async (req: Request, res: Response) => {
-    try {
-      const { systemInstruction, prompt, jsonMode } = req.body as {
-        systemInstruction?: string;
-        prompt?: string;
-        jsonMode?: boolean;
-      };
-
-      if (!prompt || !prompt.trim()) {
-        res.status(400).json({ error: 'Prompt text is required.' });
-        return;
-      }
-
-      const ai = getAiClient();
-      const started = Date.now();
-
-      const config: {
-        systemInstruction?: string;
-        responseMimeType?: string;
-      } = {};
-
-      if (systemInstruction && systemInstruction.trim()) {
-        config.systemInstruction = systemInstruction.trim();
-      }
-      if (jsonMode) {
-        config.responseMimeType = 'application/json';
-      }
-
-      const response = await ai.models.generateContent({
-        model: MODEL_ID,
-        contents: prompt.trim(),
-        config: Object.keys(config).length > 0 ? config : undefined,
-      });
-
-      const latencyMs = Date.now() - started;
-      const text = (response.text ?? '').trim();
-      const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
-
-      res.json({
-        text,
-        latencyMs,
-        charCount: text.length,
-        wordCount,
-        model: MODEL_ID,
-      });
-    } catch (err) {
-      const formatted = formatGeminiError(err);
-      res.status(formatted.status).json({ error: formatted.message });
-    }
-  });
-
-  // Evaluate a prompt against a challenge brief with structured feedback
-  app.post('/api/gemini/critique', async (req: Request, res: Response) => {
-    try {
-      const { challengeTitle, challengeBrief, systemInstruction, prompt } = req.body as {
-        challengeTitle?: string;
-        challengeBrief?: string;
-        systemInstruction?: string;
-        prompt?: string;
-      };
-
-      if (!prompt || !prompt.trim()) {
-        res.status(400).json({ error: 'Draft a prompt before requesting an evaluation.' });
-        return;
-      }
-
-      const ai = getAiClient();
-
-      const evaluationRequest = [
-        `Challenge Title: ${challengeTitle || 'PromptWars Open Task'}`,
-        `Challenge Brief:\n${challengeBrief || 'Demonstrate prompt clarity, creative problem solving, and constraint adherence.'}`,
-        `Candidate System Instruction:\n${systemInstruction?.trim() || '(None provided)'}`,
-        `Candidate User Prompt:\n${prompt.trim()}`,
-      ].join('\n\n');
-
-      const response = await ai.models.generateContent({
-        model: MODEL_ID,
-        contents: evaluationRequest,
-        config: {
-          systemInstruction:
-            'You are a strict hackathon judge and senior prompt engineer reviewing a participant prompt for PromptWars. Give direct, actionable, non-generic critique focused on task alignment, structural constraints, edge-case coverage, and clarity. Provide a concrete improved user prompt.',
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              summary: {
-                type: Type.STRING,
-                description: 'Two-sentence executive assessment of how well the prompt tackles the brief.',
-              },
-              strengths: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-                description: '2-3 specific strengths present in the candidate prompt.',
-              },
-              blindSpots: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-                description: '2-3 concrete ambiguities or missing constraints.',
-              },
-              edgeCases: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-                description: '2-3 test edge cases the prompt should explicitly handle.',
-              },
-              improvedPrompt: {
-                type: Type.STRING,
-                description: 'A sharper, well-structured rewrite of the candidate user prompt.',
-              },
-            },
-            required: ['summary', 'strengths', 'blindSpots', 'edgeCases', 'improvedPrompt'],
-          },
-        },
-      });
-
-      const rawJson = (response.text ?? '{}').trim();
-      const parsed = JSON.parse(rawJson);
-      res.json(parsed);
-    } catch (err) {
-      const formatted = formatGeminiError(err);
-      res.status(formatted.status).json({ error: formatted.message });
-    }
-  });
-
-  // Polish submission strategy writeup for clarity
-  app.post('/api/gemini/polish', async (req: Request, res: Response) => {
-    try {
-      const { title, problemStatement, strategy, notes } = req.body as {
-        title?: string;
-        problemStatement?: string;
-        strategy?: string;
-        notes?: string;
-      };
-
-      if (!strategy || !strategy.trim()) {
-        res.status(400).json({ error: 'Write a strategy draft before polishing.' });
-        return;
-      }
-
-      const ai = getAiClient();
-      const response = await ai.models.generateContent({
-        model: MODEL_ID,
-        contents: [
-          `Project Title: ${title || 'Untitled PromptWars Entry'}`,
-          `Problem Statement: ${problemStatement || 'Not specified'}`,
-          `Draft Strategy:\n${strategy.trim()}`,
-          `Implementation Notes:\n${notes?.trim() || 'None'}`,
-        ].join('\n\n'),
-        config: {
-          systemInstruction:
-            'Rewrite the participant submission strategy into concise, clear, judge-ready prose (120-180 words). Preserve every technical fact and never invent metrics, benchmarks, or features not present in the draft.',
-        },
-      });
-
-      res.json({ polishedStrategy: (response.text ?? '').trim() });
-    } catch (err) {
-      const formatted = formatGeminiError(err);
-      res.status(formatted.status).json({ error: formatted.message });
-    }
-  });
 
   // Pillar 1: Cardiac event risk prediction & triage assessment
   app.post('/api/gemini/cardiac-assess', async (req: Request, res: Response) => {
@@ -423,6 +262,38 @@ async function startServer() {
     }
   });
 
+  // Trial & Clinical Demo Inquiry Endpoint
+  app.post('/api/inquiries', (req: Request, res: Response) => {
+    const { fullName, email, planName, wearable, inquiryType } = req.body as {
+      fullName?: string;
+      email?: string;
+      planName?: string;
+      wearable?: string;
+      inquiryType?: string;
+    };
+
+    if (!fullName || !fullName.trim()) {
+      res.status(400).json({ error: 'Please enter your full name.' });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
+      res.status(400).json({ error: 'Please enter a valid email address.' });
+      return;
+    }
+
+    res.json({
+      confirmed: true,
+      referenceCode: `CC-${Math.floor(100000 + Math.random() * 900000)}`,
+      fullName: fullName.trim(),
+      email: email.trim(),
+      planName: planName || 'Individual Care',
+      wearable: wearable || 'Apple Watch',
+      inquiryType: inquiryType || 'trial',
+    });
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -438,7 +309,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`PromptWars Studio server listening on http://0.0.0.0:${PORT}`);
+    console.log(`CardioCalm server listening on http://0.0.0.0:${PORT}`);
   });
 }
 
