@@ -20,7 +20,6 @@ Cardiac emergencies can escalate within minutes. Recognizing early warning signa
 2. **Calm** — Provide context-aware emotional support and guided breathing during stressful situations.
 3. **Respond** — Prepare structured emergency information to help patients and caregivers communicate effectively with emergency services.
 
-Powered by **Google Gemini AI**, CardioCalm brings these capabilities together in one interactive platform, alongside a dedicated Prompt Engineering Lab for experimentation, evaluation, and hackathon submission preparation.
 
 > **Our vision:** Turn scattered health signals into actionable awareness, panic into calm, and emergency information into coordinated communication.
 
@@ -30,7 +29,7 @@ Powered by **Google Gemini AI**, CardioCalm brings these capabilities together i
 
 ### 1. 🫀 Early Cardiac Risk Prediction
 
-**API:** `/api/gemini/cardiac-assess`
+**API:** `/api/gemini`
 
 CardioCalm analyzes wearable health metrics, symptoms, and activity context to generate a structured cardiac risk assessment.
 
@@ -59,7 +58,7 @@ CardioCalm analyzes wearable health metrics, symptoms, and activity context to g
 
 ### 2. 🧘 Patient Calming & Guided Breathing
 
-**API:** `/api/gemini/calm-chat`
+**API:** `/api/gemini`
 
 A cardiac health event can create fear, confusion, and panic. CardioCalm includes an AI-powered calming companion designed to provide short, grounded, and supportive communication.
 
@@ -248,7 +247,7 @@ Potential enhancements include:
 ---
 
 
-**Live Demo:** https://promptwars-studio.ai.studio
+**Live Demo:**[ https://promptwars-studio.ai.studio](https://promptwars-studio.ai.studio)
 
 **GitHub Repository:** https://github.com/prachimahajan192008/cardiocalm-ai.
 
