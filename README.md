@@ -6,9 +6,6 @@
 
   An AI-powered cardiac health triage prototype that combines early risk assessment, patient calming, and emergency response coordination.
 
-  Built for **PromptWars X AI Vibeathon 2026**  
-  📅 November 25, 2026
-
 </p>
 
 ---
@@ -250,13 +247,6 @@ Potential enhancements include:
 
 ---
 
-## 🏆 Hackathon Submission
-
-**Event:** PromptWars X AI Vibeathon 2026  
-**Project:** CardioCalm  
-**Category:** AI-Powered Healthcare / Agentic AI  
-**Core AI Technology:** Google Gemini AI  
-**Development Stack:** React, TypeScript, Express.js, and Google GenAI SDK
 
 **Live Demo:** https://promptwars-studio.ai.studio
 
